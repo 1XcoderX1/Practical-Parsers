@@ -1,10 +1,32 @@
-# Practical Parser in JAVA
-## This repository is the implementation of a practical parser, done in two parts -
+# Practical Parsers for a compiler
+This repository is the implementation of a practical parser, done in two parts -
 * A Top Down parser
 * A Bottom up parser
 
-### Part 1: Top Down Parsers
-This unambiguous context-free grammar for a subset of arithmetic expressions was used to create the parser grammar:
+The folder structure of the files is as follows  -
+
+    -practical-parsers-for-a-compiler
+
+    ------.git
+    ------.metadata
+    ------.recommenders
+    ------jflex1.7.0
+    ------practicalparsers
+      ------.settings
+      ------bin
+      ------src
+            ------partone
+                  ------ Files for part one
+            ------parttwo
+                  ------jflex
+                  ------jcup
+                  ------Other files for part two
+    ------.README.MD
+
+
+## Part 1 : Top Down Parser
+
+The following unambiguous context-free grammar has been provided -
 
 E → E + T | T
 
@@ -12,35 +34,80 @@ T → T * F | F
 
 F → (E) | a
 
-A hand coded recursive descent parser was developed for this language.
+The code inside the partone folder is for this part. The input is first tokenized using a hand-coded lexer. There should be exactly one space between the input characters,
+for example - ( 5 + 8 * 9 ).
 
-Then, the grammar was modified into this left factored version using a parsing table to develop a predictive parser:
+The parser is called on the input (tokenized). It parses the input according to the grammar. For the second part, as the input language is left-recursive, the following grammar was used to remove left-recursion to build the parser -
 
-E →  T E′
+E  →  T E'
 
-E′ →  + T E′ | ε
+E' →  + T E' | e
 
-T →  F T′
+T  →  F T'
 
-T ′ →  ∗ F T′ | ε
+T' →  * F T' | e
 
-F →  ( E ) | a
+F  →  (E) | a
 
-#### Parsing table
-
-|    | (        | a        | )       | +          |  *         |
-|----|----------|----------|---------|------------|------------|
-| E  | E -> TE' | E -> TE' |         |            |            |
-| E' |          |          | E' -> ε | E' -> +TE' |            |
-| T  | T -> FT' | T -> FT' |         |            |            |
-| T' |          |          | T' -> ε | T' -> ε    | T' -> *FT' |
-| F  | F -> (E) | F -> a   |         |            |            |
-
-For this predictive parser, a tokeniser was coded by hand. The parser recognises valid strings and rejects invalid ones. The parser also prints the parse tree, if the string was valid and evaluates the expressions input.
+* e  = epsilon and 'a' has been replaced to INT in the code.
 
 
-### Part 2: Bottom-Up Parser
-The following grammar was used for the parser:
+The system checks if the input is valid and reports if it is not valid. If the input is valid, the parsed input is used to print put a full parse tree for the expression.  
+
+For example, for input, (6 * 5 + 2). the tree is as follows -
+
+
+
+ \--F
+
+    |--(
+
+    |--E
+
+    |    |--T
+
+    |    |    |--F
+
+    |    |    |   \--int
+
+    |    |   \--T'
+
+    |    |       |--*
+
+    |    |       |--F
+
+    |    |       |   \--int
+
+    |    |       \--T'
+
+    |    |           \--e
+
+    |   \--E'
+
+    |       |--+
+
+    |       |--T
+
+    |       |    |--F
+
+    |       |    |   \--int
+
+    |       |   \--T'
+
+    |       |       \--e
+
+    |       \--E'
+
+    |           \--e
+
+    \--)
+
+
+To test the code, please run the Main.java file in the partone folder and enter the expression to parse with one space between each character. The program will first show if the input is valid, and if it is, the parse tree is printed. Use of the eclipse IDE is recommended.
+
+## Part Two: Bottom Up Parser
+
+The following grammar is given -
 
 E → E + T | E - T | T
 
@@ -48,6 +115,116 @@ T → T * F | T / F | F
 
 F → (E) | INT | ID
 
-Where INT and ID are integers and standard programming-language variable names respectively. JCup was used to implement a bottom-up parser for this language.
+Java, JCup and JFlex has been used for this part. A lexer is generated using JFlex. The structure and details of the lexer are stored in the lexer.flex file in the jflex folder in the parttwo folder. This file is used by the JFlex .jar file to generate the java class file which is used to lex the input. The parser is created using JCup. The structure of this parser is defined in the 'parser.cup' file which is used by the JCup .jar file to create the java class file which is used to parse the input.
 
-The lexical analyser developed in the first was used for this parser. It recognises valid and invalid strings and prints a parser tree for the same. It also evaluates expressions.
+To create the binary tree for this exercise, token classes are written which are in the parsertokens folder inside the jcup folder. They are used to create a node structure for the input, and then parsed to create a tree from them.
+
+For Example -
+
+For the input ((5 + 2) / (2 * 7) * (8 - 10)), the output tree is as follows -
+
+
+ \-- E
+
+    \-- T
+
+        \-- F
+
+            |-- (
+
+            |-- E
+
+            |   \-- T
+
+            |       |-- T
+
+            |       |   |-- T
+
+            |       |   |   \-- F
+
+            |       |   |       |-- (
+
+            |       |   |       |-- E
+
+            |       |   |       |   |-- E
+
+            |       |   |       |   |   \-- T
+
+
+            |       |   |       |   |       \-- F
+
+            |       |   |       |   |           \-- INT
+
+            |       |   |           |-- +
+
+            |       |   |       |   \-- T
+
+            |       |   |       |       \-- F
+
+            |       |   |       |           \-- INT
+
+            |       |   |       \-- )
+
+            |           |-- /
+
+            |       |   \-- F
+
+            |       |       |-- (
+
+            |       |       |-- E
+
+            |       |       |   \-- T
+
+            |       |       |       |-- T
+
+            |       |       |       |   \-- F
+
+            |       |       |       |       \-- INT
+
+            |       |       |       \-- *
+
+            |       |       |       \-- F
+
+            |       |       |           \-- INT
+
+            |       |       \-- )
+
+            |       \-- *
+
+            |       \-- F
+
+            |           |-- (
+
+            |           |-- E
+
+            |           |   |-- E
+
+            |           |   |   \-- T
+
+            |           |   |       \-- F
+
+            |           |   |           \-- INT
+
+            |           |-- -
+
+            |           |   |-- T
+
+            |           |   |   \-- F
+
+            |           |   |       \-- INT
+
+            |           |   \-- T
+
+            |           |       \-- F
+
+            |           |           \-- INT
+
+            |           \-- )
+
+            \-- )
+
+
+
+
+The input should be put in the InputFile.txt file in the parttwo folder. The create.bat files can be used to create the java files from the jar files in each JCup and the JFlex folder. Alternatively, the commands inside the bat files can be executed on the command line to creacte the JAVA files.
+After the JAVA files are created, write the input in the text file and then run Main.java, The console will print the corresponding parse tree for the input. Again, use of Eclipse IDE is recommended.
